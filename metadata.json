@@ -1,0 +1,15 @@
+{
+  "name": "adrianovieira-puppetboard",
+  "version": "0.1.0",
+  "author": "Adriano Vieira",
+  "summary": "Install and setup puppetboard, a dashboard for puppetDB",
+  "license": "MIT",
+  "source": "https://gitlab.com/adrianovieira/puppetboard",
+  "project_page": "https://gitlab.com/adrianovieira/puppetboard",
+  "issues_url": "https://gitlab.com/adrianovieira/puppetboard/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ],
+  "data_provider": null
+}
+
