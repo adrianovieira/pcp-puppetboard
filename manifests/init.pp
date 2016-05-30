@@ -1,48 +1,79 @@
 # Class: puppetboard
 # ===========================
 #
-# Full description of class puppetboard here.
+# Install and Setup puppetboard for PCP
 #
 # Parameters
 # ----------
 #
 # Document parameters here.
 #
-# * `sample parameter`
-# Explanation of what this parameter affects and what it defaults to.
-# e.g. "Specify one or more upstream ntp servers as an array."
+# * `puppetboard_docroot`
+# path to deploy puppetboard to.
 #
 # Variables
 # ----------
 #
 # Here you should define a list of variables that this module would require.
 #
-# * `sample variable`
-#  Explanation of how this variable affects the function of this class and if
-#  it has a default. e.g. "The parameter enc_ntp_servers must be set by the
-#  External Node Classifier as a comma separated list of hostnames." (Note,
-#  global variables should be avoided in favor of class parameters as
-#  of Puppet 2.6.)
+# * `puppetboard_docroot`
+#  Optional
+#  should be set the path to install into
+#  e.g. puppetboard_docroot => '/var/www/html/puppetboard'
 #
 # Examples
 # --------
 #
 # @example
 #    class { 'puppetboard':
-#      servers => [ 'pool.ntp.org', 'ntp.local.company.com' ],
 #    }
 #
 # Authors
 # -------
 #
-# Author Name <author@domain.com>
+# Adriano Vieira <adriano.svieira at gmail.com>
 #
 # Copyright
 # ---------
 #
-# Copyright 2016 Your name here, unless otherwise noted.
+# Copyright 2016 Adriano Vieira, unless otherwise noted.
 #
-class puppetboard {
+class puppetboard (
+  $puppetboard_docroot = '/var/www/html/puppetboard'
+  )
+  {
 
+  file { 'puppetboard_wsgi':
+    path   => "${puppetboard_docroot}/puppetboard.wsgi",
+    source => 'puppet:///modules/puppetboard/wsgi-dist.py'
+  }
+
+  file { 'puppetboard_settings':
+    path   => "${puppetboard_docroot}/settings.py",
+    source => 'puppet:///modules/puppetboard/settings-dist.py',
+  }
+
+  class { 'epel': }
+  ->
+  package { 'python-pip': ensure => present }
+  ->
+  exec {'puppetboard_install':
+    path    => '/usr/bin',
+    command => 'pip install puppetboard',
+    onlyif  => 'test ! `pip list|grep puppetboard|wc -l` -eq 1',
+  }
+
+  include 'apache::mod::wsgi'
+  apache::vhost { "puppetboard.${::domain}_wsgi":
+    servername          => "puppetboard.${::domain}",
+    priority            => '04',
+    port                => '443',
+    ssl                 => true,
+    docroot             => $puppetboard_docroot,
+    options             => '-Indexes',
+    wsgi_script_aliases => {
+      '/' => "${puppetboard_docroot}/puppetboard.wsgi"
+    },
+  }
 
 }
