@@ -63,6 +63,7 @@ class puppetboard (
     onlyif  => 'test ! `pip list|grep puppetboard|wc -l` -eq 1',
   }
 
+  include apache
   include 'apache::mod::wsgi'
   apache::vhost { "puppetboard.${::domain}_wsgi":
     servername          => "puppetboard.${::domain}",
